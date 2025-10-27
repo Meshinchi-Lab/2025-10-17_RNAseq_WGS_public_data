@@ -35,8 +35,6 @@ Bulk Nanopore long-read Whole Genome Sequenceing
 
 ## Cloud Compute Costs
 
-./nextflow run -c nextflow.config nf-core/rnaseq -profile test -w az://data/workingdir --outdir az://data/outuput
-
 ### bulk RNA-seq
 
 #### Test Dataset
@@ -108,18 +106,6 @@ nextflow -c ${NXF_CONFIG} \
     -with-trace reports/${PREFIX}_trace.txt
 ```
 
-docker run \
-    -i --cpu-shares 3072 --memory 18432m \
-    -v /home/jennysmith/.nextflow/assets/nf-core/fetchngs/bin:/home/jennysmith/.nextflow/assets/nf-core/fetchngs/bin \
-    -v /mnt/bioinformatics/nextflow_tmp/5f/efaa7560a1abdc6c5cd8aad7615c04:/mnt/bioinformatics/nextflow_tmp/5f/efaa7560a1abdc6c5cd8aad7615c04 \
-    -w "$PWD" -u $(id -u):$(id -g) \
-    quay.io/biocontainers/python:3.9--1 /bin/bash
-    
-
-```
-
-```
-
 ## Long Read WGS
 
 
@@ -142,8 +128,6 @@ PREFIX="HG001_${ID}_wf-human-variation"
 BAMS='/bioinformatics_resources/ngs_test_datasets/human/wgs/sup/calls.sorted.bam'
 OUTDIR='/bioinformatics_resources/ngs_test_datasets/human/wgs/wf-human-variation'
 FASTA='/bioinformatics_resources/genome_references/human/GRCh38/cicero_1.9.6/Homo_sapiens/GRCh38_no_alt/FASTA/GRCh38_no_alt.fa'
-
-#--override_basecaller_cfg dna_r10.4.1_e8.2_400bps_sup@v4.3.0 \
 
 nextflow \
     -log reports/${PREFIX}_nextflow.log \
