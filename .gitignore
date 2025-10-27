@@ -1,0 +1,11 @@
+venv/
+.nextflow/
+reports/
+dag/
+null/
+results/
+**work/
+**data/
+
+main_run.sh
+hyperqueue.nextflow.config
