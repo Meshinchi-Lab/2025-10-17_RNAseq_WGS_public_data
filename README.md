@@ -148,3 +148,17 @@ nextflow \
     -cache TRUE 
 
 ```
+
+
+# Configuration 
+
+### Azure Batch
+
+Install the CLI 
+https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=apt
+
+```
+az login
+```
+
+https://www.nextflow.io/docs/latest/azure.html#azure-batch
