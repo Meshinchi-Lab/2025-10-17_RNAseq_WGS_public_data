@@ -162,3 +162,6 @@ az login
 ```
 
 https://www.nextflow.io/docs/latest/azure.html#azure-batch
+
+Azure Batch pool, which is a collection of virtual machines that can scale up or down based on an autoscale formula.
+
