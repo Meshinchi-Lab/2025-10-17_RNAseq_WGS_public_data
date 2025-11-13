@@ -2,7 +2,7 @@
 
 set -eu
 DATE=$(date +%F)
-NXF_CONFIG=./azbatch.nextflow.config
+NXF_CONFIG=./configs/azbatch.nextflow.config
 NXF_PROFILE="test" 
 REPORT=${1:-"nfcore_rnaseq"}
 

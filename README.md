@@ -165,3 +165,38 @@ https://www.nextflow.io/docs/latest/azure.html#azure-batch
 
 Azure Batch pool, which is a collection of virtual machines that can scale up or down based on an autoscale formula.
 
+
+#### Run pipelines 
+
+```
+sudo apt install openjdk-17-jre-headless 
+sudo apt-get install gh
+curl -s https://get.nextflow.io | bash
+export PATH=$PATH:~/opt/bin
+
+
+git clone https://github.com/Meshinchi-Lab/2025-10-17_RNAseq_WGS_public_data.git
+cd 2025-10-17_RNAseq_WGS_public_data/
+
+
+nextflow -c ./azbatch.nextflow.config run nf-core/rnaseq -profile test -w az://demo-azure-rnaseq/work 
+```
+
+
+export PATH=$PATH:~/opt/bin
+
+profiles {
+    azbatch {
+        process {
+            executor = 'azurebatch'
+            //queue = 'large'
+            withLabel: 'high_mem' { 
+                queue = 'large'
+            }
+            withLabel: '!high_mem' { 
+                queue = 'small'
+            }
+        }
+    }
+}
+

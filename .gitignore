@@ -7,6 +7,7 @@ results/
 **work/
 **data/
 .nextflow.log*
+**temp/ 
 
 main_run.sh
 hyperqueue.nextflow.config
