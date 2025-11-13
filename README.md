@@ -152,7 +152,7 @@ nextflow \
 
 # Configuration 
 
-### Azure Batch
+## Azure Batch
 
 Install the CLI 
 https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=apt
@@ -165,6 +165,44 @@ https://www.nextflow.io/docs/latest/azure.html#azure-batch
 
 Azure Batch pool, which is a collection of virtual machines that can scale up or down based on an autoscale formula.
 
+
+#### Run pipelines 
+
+```
+# on the VM jumping machine
+
+sudo apt install openjdk-17-jre-headless 
+sudo apt-get install gh
+curl -s https://get.nextflow.io | bash
+export PATH=$PATH:~/opt/bin
+
+
+git clone https://github.com/Meshinchi-Lab/2025-10-17_RNAseq_WGS_public_data.git
+cd 2025-10-17_RNAseq_WGS_public_data/
+
+
+nextflow -c ./azbatch.nextflow.config run nf-core/rnaseq -profile test -w az://demo-azure-rnaseq/work 
+```
+
+
+export PATH=$PATH:~/opt/bin
+
+profiles {
+    azbatch {
+        process {
+            executor = 'azurebatch'
+            //queue = 'large'
+            withLabel: 'high_mem' { 
+                queue = 'large'
+            }
+            withLabel: '!high_mem' { 
+                queue = 'small'
+            }
+        }
+    }
+}
+
+### Data Transfer 
 
 https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-authorize-user-identity?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=linux
 
@@ -220,7 +258,7 @@ az storage blob list -c "cloudhpcstgaccount" --auth-mode login
 
 az storage blob list -c "demo-azure-wgs" --auth-mode login
 
-### Google Cloud 
+## Google Cloud 
 
 Upload data to google cloud storage
 https://docs.cloud.google.com/sdk/docs/install#linux
@@ -245,10 +283,12 @@ gcloud auth login
 * Compute Engine commands will use zone `europe-west4-a` by default
 
 
+### Data Transfer 
+
 https://docs.cloud.google.com/storage/docs/copying-renaming-moving-objects#copy
 https://docs.cloud.google.com/storage/docs/uploading-objects#uploading-an-object
 
-
+```
 GCLOUD="gs://demo-data-cloud-hpc-476411"
 RNASEQ="/bioinformatics_resources/ngs_test_datasets/human/rnaseq/bulk/nf-core"
 FILES=$(ls -1 $RNASEQ/{SRX1603392,SRX2370469}*.gz)
@@ -261,7 +301,7 @@ do
         $FILE \
         $GCLOUD/rnaseq_data/$OUT
 done
-
+```
 
 ```
 WGS_BAM="/bioinformatics_resources/ngs_test_datasets/human/wgs/sup"
@@ -273,6 +313,8 @@ gcloud storage cp --recursive -L wgs_pod5_manifest.txt $WGS_POD5 \
 gcloud storage cp --recursive -L wgs_bam_manifest.txt $WGS_BAM \
     "$GCLOUD/wgs_data/sup" 
 ```
+
+### Run pipelines
 
 Connect to the VM instance from command line 
 `gcloud compute ssh hpc-toolkit --zone europe-west4-a`
