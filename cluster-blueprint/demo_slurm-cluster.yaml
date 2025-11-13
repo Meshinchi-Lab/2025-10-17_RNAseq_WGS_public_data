@@ -1,0 +1,238 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+blueprint_name: slurm-cluster
+vars:
+  project_id: cloud-hpc-476411
+  deployment_name: slurm-cluster
+  region: europe-west4
+  zone: europe-west4-b
+  gcs_bucket: demo-data-cloud-hpc-476411
+
+  # H4D RDMA VPC
+  rdma_net_range: 192.168.128.0/18
+
+  # H4D provisioning model
+  h4d_dws_flex_enabled: false
+  h4d_reservation_name: ""
+
+# Documentation for each of the modules used below can be found at
+# https://github.com/GoogleCloudPlatform/hpc-toolkit/blob/main/modules/README.md
+deployment_groups:
+- group: primary
+  modules:
+
+  - id: slurm-net-0
+    source: modules/network/pre-existing-vpc
+    settings:
+      project_id: $(vars.project_id)
+      region: europe-west4
+      network_name: cloud-hpc-vpc
+      subnetwork_name: opbg-254
+
+  - id: h4d-rdma-net
+    source: modules/network/vpc
+    settings:
+      network_name: $(vars.deployment_name)-rdma-net-0
+      mtu: 8896
+      network_profile: https://www.googleapis.com/compute/beta/projects/$(vars.project_id)/global/networkProfiles/$(vars.zone)-vpc-falcon
+      network_routing_mode: REGIONAL
+      enable_cloud_router: false
+      enable_cloud_nat: false
+      enable_internal_traffic: false
+      subnetworks:
+      - subnet_name: $(vars.deployment_name)-rdma-sub-0
+        subnet_region: $(vars.region)
+        subnet_ip: $(vars.rdma_net_range)
+        region: $(vars.region)
+
+  - id: private_service_access
+    source: community/modules/network/private-service-access
+    use: [slurm-net-0]
+
+  - id: hpc_dash
+    source: modules/monitoring/dashboard
+
+  - id: spack-setup
+    source: community/modules/scripts/spack-setup
+    settings:
+      install_dir: /apps/spack
+      spack_ref: "v0.23.1"
+
+  - id: spack-build
+    source: community/modules/scripts/spack-execute
+    use: [spack-setup]
+      #settings:
+      #  commands: |
+      #    spack install osu-micro-benchmarks@7.5 %gcc ^intel-oneapi-mpi
+      #    spack install intel-mpi-benchmarks@2021.7
+
+  - id: homefs
+    source: modules/file-system/filestore
+    use: [slurm-net-0, private_service_access]
+    settings:
+      filestore_tier: BASIC_SSD
+      size_gb: 2560
+      filestore_share_name: homeshare
+      local_mount: /home
+
+  - id: appsfs
+    source: modules/file-system/filestore
+    use: [slurm-net-0, private_service_access]
+    settings:
+      filestore_tier: BASIC_HDD
+      size_gb: 1024
+      filestore_share_name: appsshare
+      local_mount: /apps
+
+  - id: data-bucket
+    source: modules/file-system/pre-existing-network-storage
+    settings:
+      remote_mount: $(vars.gcs_bucket)
+      local_mount: /data-bucket
+      fs_type: gcsfuse
+      mount_options: defaults,_netdev,implicit_dirs,allow_other
+
+  - id: c4_nodeset_highmem_8
+    source: community/modules/compute/schedmd-slurm-gcp-v6-nodeset
+    use: [slurm-net-0, homefs, appsfs, data-bucket]
+    settings:
+      bandwidth_tier: gvnic_enabled
+      machine_type: c4-highmem-8
+      node_count_static: 0
+      node_count_dynamic_max: 20
+      enable_placement: true
+      placement_max_distance: 2
+      advanced_machine_features:
+        threads_per_core: 1
+        turbo_mode: "ALL_CORE_MAX"
+      disk_type: hyperdisk-balanced
+      on_host_maintenance: TERMINATE
+      allow_automatic_updates: false
+
+  - id: c4_partition_highmem_8
+    source: community/modules/compute/schedmd-slurm-gcp-v6-partition
+    use: [c4_nodeset_highmem_8]
+    settings:
+      exclusive: false
+      partition_name: c4highmem8
+      is_default: true
+      partition_conf:
+        ResumeTimeout: 900
+        SuspendTimeout: 600
+
+  - id: c4_gnr_nodeset
+    source: community/modules/compute/schedmd-slurm-gcp-v6-nodeset
+    use: [slurm-net-0, homefs, appsfs, data-bucket]
+    settings:
+      bandwidth_tier: gvnic_enabled
+      machine_type: c4-standard-288
+      node_count_static: 0
+      node_count_dynamic_max: 2
+      enable_placement: true
+      placement_max_distance: 1
+      advanced_machine_features:
+        threads_per_core: 1
+        turbo_mode: "ALL_CORE_MAX"
+      disk_type: hyperdisk-balanced
+      on_host_maintenance: TERMINATE
+      allow_automatic_updates: false
+
+  - id: c4_gnr_partition
+    source: community/modules/compute/schedmd-slurm-gcp-v6-partition
+    use: [c4_gnr_nodeset]
+    settings:
+      exclusive: false
+      partition_name: c4gnr
+      is_default: false
+      partition_conf:
+        ResumeTimeout: 900
+        SuspendTimeout: 600
+
+  - id: h4d_startup
+    source: modules/scripts/startup-script
+    settings:
+      set_ofi_cloud_rdma_tunables: true
+
+  - id: h4d_nodeset
+    source: community/modules/compute/schedmd-slurm-gcp-v6-nodeset
+    use: [h4d_startup, slurm-net-0, homefs, appsfs, data-bucket]
+    settings:
+      bandwidth_tier: gvnic_enabled
+      machine_type: h4d-highmem-192-lssd
+      node_count_static: 0
+      node_count_dynamic_max: 2
+      enable_placement: true
+      placement_max_distance: 1
+
+      #Provisioning models
+      reservation_name: $(vars.h4d_reservation_name)
+      dws_flex:
+        enabled: $(vars.h4d_dws_flex_enabled)
+
+      disk_type: hyperdisk-balanced
+      on_host_maintenance: TERMINATE
+      allow_automatic_updates: false
+      additional_networks:
+        $(concat(
+          [{
+            network=null,
+            subnetwork=h4d-rdma-net.subnetwork_self_link,
+            subnetwork_project=vars.project_id,
+            nic_type="IRDMA",
+            queue_count=null,
+            network_ip=null,
+            stack_type=null,
+            access_config=null,
+            ipv6_access_config=[],
+            alias_ip_range=[]
+          }]
+        ))
+
+  - id: h4d_partition
+    source: community/modules/compute/schedmd-slurm-gcp-v6-partition
+    use: [h4d_nodeset]
+    settings:
+      exclusive: false
+      partition_name: h4d
+      is_default: true
+      partition_conf:
+        ResumeTimeout: 900
+        SuspendTimeout: 600
+
+  - id: slurm_login
+    source: community/modules/scheduler/schedmd-slurm-gcp-v6-login
+    use: [slurm-net-0]
+    settings:
+      machine_type: n4-standard-4
+      disk_type: hyperdisk-balanced
+      enable_login_public_ips: true
+      allow_automatic_updates: false
+
+  - id: slurm_controller
+    source: community/modules/scheduler/schedmd-slurm-gcp-v6-controller
+    use: [slurm-net-0, c4_partition_highmem_8, c4_gnr_partition, h4d_partition, homefs, appsfs, data-bucket, spack-build, slurm_login]
+    settings:
+      machine_type: n4-standard-4
+      disk_type: hyperdisk-balanced
+      enable_controller_public_ips: true
+      allow_automatic_updates: false
+      controller_state_disk:
+        type: hyperdisk-balanced
+        size: 50
+      cloud_parameters:
+        unkillable_step_timeout: 900
+      controller_startup_scripts_timeout: 1200
+      login_startup_scripts_timeout: 1200
+      compute_startup_scripts_timeout: 1200

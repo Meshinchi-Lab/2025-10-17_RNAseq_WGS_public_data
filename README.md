@@ -165,3 +165,114 @@ https://www.nextflow.io/docs/latest/azure.html#azure-batch
 
 Azure Batch pool, which is a collection of virtual machines that can scale up or down based on an autoscale formula.
 
+
+https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-authorize-user-identity?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=linux
+
+```
+https://github.com/Azure/azure-storage-azcopy/releases
+azcopy -h
+
+BLOB="https://cloudhpcstgaccount.blob.core.windows.net"
+azcopy list --machine-readable $BLOB
+```
+
+```
+# https://github.com/Azure/azure-storage-azcopy/issues/858#issuecomment-1079278951
+# find top level contents
+azcopy ls "$BLOB" | cut -d/ -f 1 | awk '!a[$0]++'
+
+# find directories with depth N
+N=3
+azcopy ls "$BLOB" | cut -d/ -f 1-${N} | awk '!a[$0]++'
+
+RNASEQ="/bioinformatics_resources/ngs_test_datasets/human/rnaseq/bulk/nf-core"
+ls $RNASEQ/{SRX1603392,SRX2370469}*.gz
+FILE1="$RNASEQ/SRX1603392_T1_1.fastq.gz"
+
+azcopy copy --log-level DEBUG $FILE1 "$BLOB/demo-azure-rnaseq/rnaseq_data" 
+```
+
+```
+FILES=$(ls -1 $RNASEQ/{SRX1603392,SRX2370469}*.gz)
+for FILE in $(echo "$FILES")
+do
+    echo $(basename $FILE)
+    cp $FILE ./data/rnaseq_data
+    #azcopy copy $FILE "$BLOB/demo-azure-rnaseq/rnaseq_data" --log-level DEBUG
+done
+
+WGS_BAM="/bioinformatics_resources/ngs_test_datasets/human/wgs/sup"
+WGS_POD5="/bioinformatics_resources/ngs_test_datasets/human/wgs/pod5"
+
+azcopy copy $WGS_POD5 "$BLOB/demo-azure-wgs/wgs_data/pod5" --log-level DEBUG --recursive=true --put-md5 &
+
+azcopy copy $WGS_BAM "$BLOB/demo-azure-wgs/wgs_data/sup" --log-level DEBUG --recursive=true --put-md5
+```
+
+N=2
+azcopy ls "$BLOB" | cut -d/ -f 1-${N} | sort | uniq
+>demo-azure-rnaseq/rnaseq_data; Content Length: 7.18 GiB
+>demo-azure-rnaseq/work
+>demo-azure-wgs/wgs_data
+>INFO: Authenticating to source using Azure AD
+
+az storage blob list -c "cloudhpcstgaccount" --auth-mode login
+
+az storage blob list -c "demo-azure-wgs" --auth-mode login
+
+### Google Cloud 
+
+Upload data to google cloud storage
+https://docs.cloud.google.com/sdk/docs/install#linux
+
+```
+tar -xf google-cloud-cli-linux-x86_64.tar.gz
+./google-cloud-sdk/install.sh --help
+
+./google-cloud-sdk/install.sh --bash-completion COMMAND_COMPLETION  --path-update PATH_UPDATE --rc-path RC_PATH
+
+./google-cloud-sdk/bin/gcloud init
+```
+
+https://cloud.google.com/sdk/gcloud/reference/auth/login
+
+```
+gcloud auth login
+```
+
+* Commands will reference project `cloud-hpc-476411` by default
+* Compute Engine commands will use region `europe-west4` by default
+* Compute Engine commands will use zone `europe-west4-a` by default
+
+
+https://docs.cloud.google.com/storage/docs/copying-renaming-moving-objects#copy
+https://docs.cloud.google.com/storage/docs/uploading-objects#uploading-an-object
+
+
+GCLOUD="gs://demo-data-cloud-hpc-476411"
+RNASEQ="/bioinformatics_resources/ngs_test_datasets/human/rnaseq/bulk/nf-core"
+FILES=$(ls -1 $RNASEQ/{SRX1603392,SRX2370469}*.gz)
+for FILE in $(echo "$FILES")
+do
+    OUT=$(basename $FILE)
+    echo $OUT
+    gcloud storage cp \
+        -L rnaseq_manifest.txt \
+        $FILE \
+        $GCLOUD/rnaseq_data/$OUT
+done
+
+
+```
+WGS_BAM="/bioinformatics_resources/ngs_test_datasets/human/wgs/sup"
+WGS_POD5="/bioinformatics_resources/ngs_test_datasets/human/wgs/pod5"
+
+gcloud storage cp --recursive -L wgs_pod5_manifest.txt $WGS_POD5 \
+    "$GCLOUD/wgs_data/pod5" \
+&& \    
+gcloud storage cp --recursive -L wgs_bam_manifest.txt $WGS_BAM \
+    "$GCLOUD/wgs_data/sup" 
+```
+
+Connect to the VM instance from command line 
+`gcloud compute ssh hpc-toolkit --zone europe-west4-a`
