@@ -2,8 +2,8 @@
 
 set -eu
 DATE=$(date +%F)
-NXF_CONFIG=./configs/azbatch.nextflow.config
-NXF_PROFILE="test" 
+NXF_CONFIG="configs/azbatch.nextflow.config"
+NXF_PROFILE="test_full" 
 REPORT=${1:-"nfcore_rnaseq"}
 
 # Set Debug > 0 to increase verbosity in nextflow logs
@@ -17,4 +17,5 @@ nextflow -c ${NXF_CONFIG} \
     -profile ${NXF_PROFILE} \
     -with-report reports/${PREFIX}.html \
     -with-dag dag/${PREFIX}_dag.dot \
-    -with-trace reports/${PREFIX}_trace.txt
+    -with-trace reports/${PREFIX}_trace.txt 
+

@@ -181,9 +181,12 @@ git clone https://github.com/Meshinchi-Lab/2025-10-17_RNAseq_WGS_public_data.git
 cd 2025-10-17_RNAseq_WGS_public_data/
 
 
-nextflow -c ./azbatch.nextflow.config run nf-core/rnaseq -profile test -w az://demo-azure-rnaseq/work 
+nextflow -c ./configs/azbatch.nextflow.config run nf-core/rnaseq -profile test -w az://demo-azure-rnaseq/work 
 ```
 
+```
+./bin/azure_test_full.sh
+```
 
 export PATH=$PATH:~/opt/bin
 
