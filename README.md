@@ -318,3 +318,6 @@ gcloud storage cp --recursive -L wgs_bam_manifest.txt $WGS_BAM \
 
 Connect to the VM instance from command line 
 `gcloud compute ssh hpc-toolkit --zone europe-west4-a`
+
+
+gcloud compute ssh slurmclust-slurm-login-001 --zone europe-west4-b --tunnel-through-iap
