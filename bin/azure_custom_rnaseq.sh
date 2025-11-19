@@ -2,9 +2,10 @@
 
 set -eu
 DATE=$(date +%F)
-NXF_CONFIG="$HOME/2025-10-17_RNAseq_WGS_public_data/configs/azbatch.nextflow.config"
-NXF_PROFILE="test_full" 
-REPORT=${1:-"nfcore_rnaseq"}
+NXF_CONFIG=./configs/azbatch.nextflow.config
+NXF_PROFILE="docker" 
+NXF_ENTRY='rnaseq_count'
+REPORT=${1:-"custom_rnaseq"}
 
 # Set Debug > 0 to increase verbosity in nextflow logs
 export NXF_DEBUG=2
@@ -13,10 +14,9 @@ export NXF_DEBUG=2
 PREFIX="${REPORT}_${DATE}"
 nextflow -c ${NXF_CONFIG} \
     -log reports/${PREFIX}_nextflow.log \
-    run nf-core/rnaseq \
+    run Meshinchi-Lab/rnaseq_count_nf \
     -profile ${NXF_PROFILE} \
+    -entry ${NXF_ENTRY} \
     -with-report reports/${PREFIX}.html \
     -with-dag dag/${PREFIX}_dag.dot \
-    -with-trace reports/${PREFIX}_trace.txt 
-
-
+    -with-trace reports/${PREFIX}_trace.txt

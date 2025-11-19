@@ -37,6 +37,20 @@ Bulk Nanopore long-read Whole Genome Sequenceing
 
 ### bulk RNA-seq
 
+```
+./bin/azure_custom_rnaseq.sh
+```
+
+    // for /custom github repo rnaseq
+    sample_sheet = './rnaseq_count_nf_sample_sheet.csv'
+    gtf = 'results/gencode.v48.primary_assembly.annotation.gtf'
+    fasta = 'https://www.bcgsc.ca/downloads/genomes/9606/hg38_no_alt/bwa_0.7.6a_ind/genome/hg38_no_alt.fa'
+    rRNA_transcripts = 'results/ensembl_transcript_id_v114.txt'
+    multiqc_config = 'https://raw.githubusercontent.com/Meshinchi-Lab/rnaseq_count_nf/refs/heads/main/multiqc_config.yml'
+    user_settings = 'https://raw.githubusercontent.com/Meshinchi-Lab/rnaseq_count_nf/refs/heads/main/ncbi-user-settings.mkfg'
+    build_index = true
+    rerun_multiqc = false
+
 #### Test Dataset
 
 ```{bash}

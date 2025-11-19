@@ -3,5 +3,5 @@
 # column id : unique sample ID, no duplicates allowed in the sample sheet.
 # column single_end : boolean [true/false] if the data is single-end or paired-end.
 single_end,r1,r2,id
-false,test_data/SRX1603392_T1_1.fastq.gz,test_data/SRX1603392_T1_2.fastq.gz,SRX1603392
-false,test_data/SRX2370469_T1_1.fastq.gz,test_data/SRX2370469_T1_2.fastq.gz,SRX2370469
+false,az://demo-azure-rnaseq/rnaseq_data/SRX1603392_T1_1.fastq.gz,az://demo-azure-rnaseq/rnaseq_data/SRX1603392_T1_2.fastq.gz,SRX1603392
+false,az://demo-azure-rnaseq/rnaseq_data/SRX2370469_T1_1.fastq.gz,az://demo-azure-rnaseq/rnaseq_data/SRX2370469_T1_2.fastq.gz,SRX2370469
