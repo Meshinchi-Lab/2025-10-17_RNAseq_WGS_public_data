@@ -104,9 +104,30 @@ deployment_groups:
       fs_type: gcsfuse
       mount_options: defaults,_netdev,implicit_dirs,allow_other
 
+  - id: compute_startup
+    source: modules/scripts/startup-script
+    settings:
+      docker:
+        enabled: true
+        world_writable: true
+
+  - id: controller_startup
+    source: modules/scripts/startup-script
+    settings:
+      docker:
+        enabled: true
+        world_writable: true
+
+  - id: login_startup
+    source: modules/scripts/startup-script
+    settings:
+      docker:
+        enabled: true
+        world_writable: true
+
   - id: c4_nodeset_highmem_8
     source: community/modules/compute/schedmd-slurm-gcp-v6-nodeset
-    use: [slurm-net-0, homefs, appsfs, data-bucket]
+    use: [slurm-net-0, homefs, appsfs, data-bucket, compute_startup]
     settings:
       bandwidth_tier: gvnic_enabled
       machine_type: c4-highmem-8
@@ -134,7 +155,7 @@ deployment_groups:
 
   - id: c4_gnr_nodeset
     source: community/modules/compute/schedmd-slurm-gcp-v6-nodeset
-    use: [slurm-net-0, homefs, appsfs, data-bucket]
+    use: [slurm-net-0, homefs, appsfs, data-bucket, compute_startup]
     settings:
       bandwidth_tier: gvnic_enabled
       machine_type: c4-standard-288
@@ -164,6 +185,9 @@ deployment_groups:
     source: modules/scripts/startup-script
     settings:
       set_ofi_cloud_rdma_tunables: true
+      docker:
+        enabled: true
+        world_writable: true
 
   - id: h4d_nodeset
     source: community/modules/compute/schedmd-slurm-gcp-v6-nodeset
@@ -236,3 +260,5 @@ deployment_groups:
       controller_startup_scripts_timeout: 1200
       login_startup_scripts_timeout: 1200
       compute_startup_scripts_timeout: 1200
+      controller_startup_script: $(controller_startup.startup_script)
+      login_startup_script: $(login_startup.startup_script)
