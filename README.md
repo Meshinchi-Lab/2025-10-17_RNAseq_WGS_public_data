@@ -198,25 +198,13 @@ nextflow -c ./configs/azbatch.nextflow.config run nf-core/rnaseq -profile test -
 ```
 
 ```
-./bin/azure_test_full.sh
-```
-
 export PATH=$PATH:~/opt/bin
 
-profiles {
-    azbatch {
-        process {
-            executor = 'azurebatch'
-            //queue = 'large'
-            withLabel: 'high_mem' { 
-                queue = 'large'
-            }
-            withLabel: '!high_mem' { 
-                queue = 'small'
-            }
-        }
-    }
-}
+./bin/azure_test_full.sh
+./bin/azure_custom_rnaseq.sh
+```
+
+
 
 ### Data Transfer 
 
