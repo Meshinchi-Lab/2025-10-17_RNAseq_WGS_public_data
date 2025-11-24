@@ -230,6 +230,8 @@ BLOB="https://cloudhpcstgaccount.blob.core.windows.net"
 azcopy list --machine-readable $BLOB
 ```
 
+https://cloudhpcstgaccount.blob.core.windows.net/demo-azure-rnaseq/work/stage-60597a61-24fe-4815-b248-606150f1f6a4/49/a234fa3bdfe397cf27144e50f81d9f/
+
 ```
 # https://github.com/Azure/azure-storage-azcopy/issues/858#issuecomment-1079278951
 # find top level contents
@@ -258,9 +260,21 @@ done
 WGS_BAM="/bioinformatics_resources/ngs_test_datasets/human/wgs/sup"
 WGS_POD5="/bioinformatics_resources/ngs_test_datasets/human/wgs/pod5"
 
-azcopy copy $WGS_POD5 "$BLOB/demo-azure-wgs/wgs_data/pod5" --log-level DEBUG --recursive=true --put-md5 &
+# https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-optimize?tabs=linux
+#32 (N CPUs)*16 = 300 max
 
-azcopy copy $WGS_BAM "$BLOB/demo-azure-wgs/wgs_data/sup" --log-level DEBUG --recursive=true --put-md5
+export AZCOPY_CONCURRENCY_VALUE=100
+export AZCOPY_BUFFER_GB=96
+
+azcopy copy \
+    $WGS_POD5 "$BLOB/demo-azure-wgs/wgs_data/pod5" \
+    --log-level ERROR --check-length false \
+    --recursive=true --overwrite --put-md5 &
+
+azcopy copy \
+    $WGS_BAM "$BLOB/demo-azure-wgs/wgs_data/optimized_cp" \
+    --log-level ERROR --check-length=false \
+    --recursive=true --overwrite=true --put-md5
 ```
 
 N=2
@@ -334,3 +348,6 @@ gcloud storage cp --recursive -L wgs_bam_manifest.txt $WGS_BAM \
 
 Connect to the VM instance from command line 
 `gcloud compute ssh hpc-toolkit --zone europe-west4-a`
+
+
+gcloud compute ssh slurmclust-slurm-login-001 --zone europe-west4-b --tunnel-through-iap
