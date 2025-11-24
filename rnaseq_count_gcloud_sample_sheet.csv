@@ -1,0 +1,7 @@
+# column r1 : the absolute or relative filepath for the read 1 fastq in paired-end RNA-seq, or the single-end fastq file.
+# column r2 : the absolute or relative filepath for the read 2 fastq in paired-end RNA-seq.
+# column id : unique sample ID, no duplicates allowed in the sample sheet.
+# column single_end : boolean [true/false] if the data is single-end or paired-end.
+single_end,r1,r2,id
+false,/data-bucket/rnaseq_data/SRX1603392_T1_1.fastq.gz,/data-bucket/rnaseq_data/SRX1603392_T1_2.fastq.gz,SRX1603392
+false,/data-bucket/rnaseq_data/SRX2370469_T1_1.fastq.gz,/data-bucket/rnaseq_data/SRX2370469_T1_2.fastq.gz,SRX2370469

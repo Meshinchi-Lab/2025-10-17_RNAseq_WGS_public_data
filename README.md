@@ -334,8 +334,30 @@ gcloud storage cp --recursive -L wgs_bam_manifest.txt $WGS_BAM \
 
 ### Run pipelines
 
+1) Set up jump box VM 
+
+2) ssh to jump box VM
 Connect to the VM instance from command line 
 `gcloud compute ssh hpc-toolkit --zone europe-west4-a`
 
+3) clone and create slurm cluster
 
+https://github.com/GoogleCloudPlatform/cluster-toolkit/tree/main
+
+3) ssh to slurm login node
 gcloud compute ssh slurmclust-slurm-login-001 --zone europe-west4-b --tunnel-through-iap
+
+4) set-up environment on slurm login node
+
+sudo chown -R jennyleopoldina_smith_opbg_net:jennyleopoldina_smith_opbg_net jennyleopoldina_smith_opbg_net
+sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh nano
+curl -s https://get.sdkman.io | bash
+source "/home/jennyleopoldina_smith_opbg_net/.sdkman/bin/sdkman-init.sh"
+sdk install java 17.0.10-tem
+curl -s https://get.nextflow.io | bash
+
+ln -s /data-bucket/rnaseq_data $HOME/data
+ln -s /data-bucket/wgs_data $HOME/data
+
+5) execute pipelines

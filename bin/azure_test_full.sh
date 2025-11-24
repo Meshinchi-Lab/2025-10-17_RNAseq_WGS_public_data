@@ -2,8 +2,9 @@
 
 set -eu
 DATE=$(date +%F)
-NXF_CONFIG="$HOME/2025-10-17_RNAseq_WGS_public_data/configs/azbatch.nextflow.config"
-NXF_PROFILE="test_full" 
+NXF_CONFIG=$1
+# NXF_CONFIG="configs/azbatch.nextflow.config"
+NXF_PROFILE="test" 
 REPORT=${1:-"nfcore_rnaseq"}
 
 # Set Debug > 0 to increase verbosity in nextflow logs
