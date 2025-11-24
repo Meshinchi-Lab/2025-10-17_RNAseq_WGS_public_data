@@ -41,15 +41,6 @@ Bulk Nanopore long-read Whole Genome Sequenceing
 ./bin/azure_custom_rnaseq.sh
 ```
 
-    // for /custom github repo rnaseq
-    sample_sheet = './rnaseq_count_nf_sample_sheet.csv'
-    gtf = 'results/gencode.v48.primary_assembly.annotation.gtf'
-    fasta = 'https://www.bcgsc.ca/downloads/genomes/9606/hg38_no_alt/bwa_0.7.6a_ind/genome/hg38_no_alt.fa'
-    rRNA_transcripts = 'results/ensembl_transcript_id_v114.txt'
-    multiqc_config = 'https://raw.githubusercontent.com/Meshinchi-Lab/rnaseq_count_nf/refs/heads/main/multiqc_config.yml'
-    user_settings = 'https://raw.githubusercontent.com/Meshinchi-Lab/rnaseq_count_nf/refs/heads/main/ncbi-user-settings.mkfg'
-    build_index = true
-    rerun_multiqc = false
 
 #### Test Dataset
 
@@ -181,6 +172,14 @@ Azure Batch pool, which is a collection of virtual machines that can scale up or
 
 
 #### Run pipelines 
+
+Use this to create a VM jump box 
+Custom deployment
+  * https://portal.azure.com/#create/Microsoft.Template
+  * Build your own template in the editor
+  * Use the exported template.json file from the current VM 
+  * retain the disk image OS from prior jump box VMs (very lost cost to retain) in order keep installed deps and downloaded files
+
 
 ```
 # on the VM jumping machine
