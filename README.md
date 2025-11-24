@@ -248,10 +248,9 @@ WGS_BAM="/bioinformatics_resources/ngs_test_datasets/human/wgs/sup"
 WGS_POD5="/bioinformatics_resources/ngs_test_datasets/human/wgs/pod5"
 
 # https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-optimize?tabs=linux
-
-AZCOPY_CONCURRENCY_VALUE=100
 #32 (N CPUs)*16 = 300 max
 
+export AZCOPY_CONCURRENCY_VALUE=100
 export AZCOPY_BUFFER_GB=96
 
 azcopy copy \
